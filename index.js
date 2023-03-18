@@ -22,12 +22,25 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
     try {
         const teams = client.db("team-work").collection("teams");
+        const teamMember = client.db("team-work").collection("team-member");
         // const review = client.db("team-work").collection("reviews");
         app.post('/create-team', async (req, res) => {
             const data = req.body;
             data.date = new Date();
             const result = await teams.insertOne(data)
             res.send(result);
+        })
+        app.post('/team-member', async (req, res) => {
+            const data = req.body;
+            const result = await teamMember.insertOne(data)
+            res.send(result);
+        })
+        app.get('/team-member/:teamId', async (req, res) => {
+            const teamId = req.params.teamId;
+            const query = { teamId: teamId };
+            const cursor = teamMember.find(query);
+            const result = cursor.toArray();
+            res.send(await result)
         })
 
         app.get('/teams/:email', async (req, res) => {
@@ -36,6 +49,12 @@ async function run() {
             const cursor = teams.find(query);
             const result = cursor.toArray();
             res.send(await result)
+        })
+        app.get('/team/:teamId', async (req, res) => {
+            const teamId = req.params.teamId;
+            const query = { teamId: teamId };
+            const cursor = teams.findOne(query);
+            res.send(await cursor)
         })
 
     }
